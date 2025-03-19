@@ -135,6 +135,19 @@ struct BitMask<T, A, 4> {
   }
 #endif
 
+#if XSIMD_WITH_NEON64
+    static int toBitMask(xsimd::batch_bool<T, A> mask, const xsimd::neon64&){
+        auto value = vandq_u32(mask, vdupq_n_u32(0x1));
+        int vv =  0;
+        vv |= vgetq_lane_u32(value,0);
+        vv |= vgetq_lane_u32(value,1) << 1;
+        vv |= vgetq_lane_u32(value,2) << 2;
+        vv |= vgetq_lane_u32(value,3) << 3;
+
+        return vv;
+    }
+#endif
+
   static int toBitMask(xsimd::batch_bool<T, A> mask, const xsimd::generic&) {
     return genericToBitMask(mask);
   }
@@ -160,6 +173,17 @@ struct BitMask<T, A, 8> {
   static int toBitMask(xsimd::batch_bool<T, A> mask, const xsimd::sse2&) {
     return _mm_movemask_pd(reinterpret_cast<__m128d>(mask.data));
   }
+#endif
+
+#if XSIMD_WITH_NEON64
+    static int toBitMask(xsimd::batch_bool<T, A> mask, const xsimd::neon64&){
+        auto value = vandq_u64(mask, vdupq_n_u64(0x1));
+        int vv =  0;
+        vv |= vgetq_lane_u64(value,0);
+        vv |= vgetq_lane_u64(value,1) << 1;
+
+        return vv;
+    }
 #endif
 
   static int toBitMask(xsimd::batch_bool<T, A> mask, const xsimd::generic&) {
